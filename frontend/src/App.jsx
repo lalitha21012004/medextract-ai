@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Upload, FileText, HeartPulse, ChevronLeft, ChevronRight,LogIn } from 'lucide-react';
+import { LayoutDashboard, Upload, FileText, HeartPulse, ChevronLeft, ChevronRight,LogIn,User } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard';
 import UploadReport from './pages/UploadReport';

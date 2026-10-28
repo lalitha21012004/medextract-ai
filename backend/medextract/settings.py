@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-xprs(jy869b$eq5)5f#858tu%0@)7z=8d1ogn+8e5ab)s-95l4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1','localhost','.github.dev','.app.github.dev','*']
 
 
 # Application definition
@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "api",
+    "corsheaders",
+    "storages"
 ]
 
 MIDDLEWARE = [
@@ -49,8 +51,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
-
+CSRF_TRUSTED_ORIGINS = ['https://crispy-trout-x5w4xqrgg67j29qxv-5173.app.github.dev', 'http://127.0.0.1:8000', 'http://localhost:8000']
 ROOT_URLCONF = "medextract.urls"
 
 TEMPLATES = [
@@ -131,3 +134,66 @@ MAILERS = {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }
+FAST2SMS_API_KEY = "1CfVGKgY9dJbQqk2NCWTw5mPtznFbTh15DLHOoaCjtrZJiy6GvAuFvCq6r6x"
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+
+# settings.py
+
+# Run Celery tasks immediately in the same process (no Redis or Celery worker required)
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+# Load Gemini API key from the environment.
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+CORS_ALLOW_ALL_ORIGINS=True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+STORAGES={
+    "default":{
+        "BACKEND":"storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles":{
+        "BACKEND":"django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "medextract-ai-reports")
+AWS_S3_ENDPOINT_URL = os.getenv("AWS_S3_ENDPOINT_URL", "https://s3.filebase.io")
+
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_QUERYSTRING_AUTH = False
+AWS_S3_FILE_OVERWRITE = False

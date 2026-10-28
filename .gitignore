@@ -1,0 +1,25 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment Variables & Secrets
+*.env
+backend/.env
+
+# Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+backend/**/__pycache__/
+
+# User Uploaded Media & Test PDFs
+backend/medical_reports/
+*.pdf
+
+# Nested Git or Duplicate Folders
+backend/medextract-ai/
+
+# Node Dependencies & Logs
+node_modules/
+npm-debug.log*

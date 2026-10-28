@@ -7,6 +7,7 @@ import UploadReport from './pages/UploadReport';
 import ReportDetail from './pages/ReportDetail';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
 function Sidebar({ isCollapsed, setIsCollapsed }) {
   const location = useLocation();
 
@@ -18,6 +19,10 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
     { name: 'Report Detail', path: '/report/1', icon: FileText },
     {name:'Profile',path:'/profile',icon:User},
   ];
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  };
 
   return (
     <aside 
@@ -71,12 +76,13 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
       </div>
 <div className="space-y-2 border-t border-slate-800 pt-3">
         <Link 
-          to="/auth" 
-          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition"
-        >
-          <LogIn className="w-5 h-5 shrink-0 text-slate-400" />
-          {!isCollapsed && <span className="whitespace-nowrap">Sign Out / Login</span>}
-        </Link>
+  to="/auth" 
+  onClick={handleLogout}
+  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition"
+>
+  <LogIn className="w-5 h-5 shrink-0 text-slate-400" />
+  {!isCollapsed && <span className="whitespace-nowrap">Sign Out / Login</span>}
+</Link>
       </div>
     </aside>
   );
@@ -106,11 +112,13 @@ function AppContent({isCollapsed,setIsCollapsed}) {
         }`}
       >
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/upload" element={<UploadReport />} />
-            <Route path="/report/:id" element={<ReportDetail />} />
-            <Route path="/profile" element={<Profile/>}/>
             <Route path="/auth" element={<Auth/>}/>
+            <Route element={<ProtectedRoute/>}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/profile" element={<Profile/>}/>
+              <Route path="/upload" element={<UploadReport />} />
+            <Route path="/report/:id" element={<ReportDetail />} />
+            </Route>
           </Routes>
         </main>
       </div>

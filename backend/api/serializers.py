@@ -28,7 +28,7 @@ class MedicalReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=MedicalReport
-        fields=['id','user','file','status','extracted_text','uploaded_at','parameters']
+        fields=['id','user','report_file','status','extracted_text','uploaded_at','parameters']
         read_only_fields=['user','status','extracted_text','uploaded_at']
 
 

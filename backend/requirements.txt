@@ -14,6 +14,7 @@ google-genai
 google-generativeai
 datasets
 pydantic
+python-magic
 requests
 pdfplumber
 reportlab

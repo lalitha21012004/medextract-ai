@@ -1,8 +1,11 @@
 import axios from 'axios';
 
-// 1. Create instance with dynamic production URL support
+const cleanBaseUrl = import.meta.env.VITE_API_BASE_URL 
+  ? import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '') 
+  : '';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api` : '/api',
+  baseURL: cleanBaseUrl ? `${cleanBaseUrl}/api` : '/api',
   headers: {
     'Content-Type': 'application/json'
   },

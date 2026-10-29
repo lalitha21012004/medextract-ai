@@ -15,12 +15,9 @@ google-generativeai
 datasets
 pydantic
 python-magic
+boto3
 requests
 pdfplumber
 reportlab
-google-generativeai
-datasets
-pydantic
-requests
-pdfplumber
-reportlab
+
+

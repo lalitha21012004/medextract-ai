@@ -84,11 +84,11 @@ WSGI_APPLICATION = "medextract.wsgi.application"
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
 # Fallback local connection string for development
-LOCAL_DATABASE_URL = "postgres://med_admin:Med_Password_123!@127.0.0.1:5432/medextract_db"
+# LOCAL_DATABASE_URL = "postgres://med_admin:Med_Password_123!@127.0.0.1:5432/medextract_db"
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL", LOCAL_DATABASE_URL),
+        default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
         ssl_require=not DEBUG
     )

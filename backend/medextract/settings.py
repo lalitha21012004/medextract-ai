@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-xprs(jy869b$eq5)5f#858tu%0@)7z=8d1ogn+8e5ab)s-95l4"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ['127.0.0.1','localhost','.github.dev','.app.github.dev','*']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -48,6 +53,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.WhiteNoiseMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -77,15 +83,15 @@ WSGI_APPLICATION = "medextract.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+# Fallback local connection string for development
+LOCAL_DATABASE_URL = "postgres://med_admin:Med_Password_123!@127.0.0.1:5432/medextract_db"
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "medextract_db",
-        "USER": "med_admin",
-        "PASSWORD": "Med_Password_123!",
-        "HOST": '127.0.0.1',
-        "PORT": "5432",
-    }
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL", LOCAL_DATABASE_URL),
+        conn_max_age=600,
+        ssl_require=not DEBUG
+    )
 }
 AUTH_USER_MODEL = 'api.CustomUser'
 
@@ -125,7 +131,8 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 

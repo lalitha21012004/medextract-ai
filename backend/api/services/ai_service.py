@@ -3,8 +3,8 @@ from django.conf import settings
 import os
 from google.genai.errors import APIError
 
-PRIMARY_MODEL = "gemini-2.5-flash"  # Updated to stable current model identifier
-FALLBACK_MODELS = ["gemini-2.5-flash-lite"]
+PRIMARY_MODEL = "gemini-1.5-flash"  # Updated to stable current model identifier
+FALLBACK_MODELS = ["gemini-1.5-pro"]
 
 def get_gemini_client():
     """Initializes and returns the Google GenAI Client."""

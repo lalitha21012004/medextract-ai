@@ -170,7 +170,7 @@ class MedicalReportDetailView(APIView):
 
 
 class ReportAISummaryView(APIView):
-    """Generates or retrieves an AI summary for a specific medical report."""
+    """Generates an AI summary for a specific medical report on the fly."""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
@@ -179,42 +179,18 @@ class ReportAISummaryView(APIView):
         except MedicalReport.DoesNotExist:
             return Response({"error": "Medical report not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Return existing summary if already saved to avoid redundant API calls
-        if report.ai_summary:
-            return Response({
-                "report_id": pk,
-                "ai_summary": report.ai_summary
-            }, status=status.HTTP_200_OK)
+        # Safely fetch extracted parameters
+        parameters = report.extracted_parameters.all() if hasattr(report, 'extracted_parameters') else report.parameters.all()
+        serializer = ExtractedParameterSerializer(parameters, many=True)
 
         try:
-            # Safely grab parameters using related manager name or values fallback
-            parameters = report.extracted_parameters.all() if hasattr(report, 'extracted_parameters') else report.parameters.all()
-            serializer = ExtractedParameterSerializer(parameters, many=True)
-            
-            # Generate summary via Gemini AI utility
             summary = generate_medical_summary(serializer.data)
-            
-            # Persist summary to model instance
-            report.ai_summary = summary
-            report.save()
-
             return Response({
                 "report_id": pk,
                 "ai_summary": summary
             }, status=status.HTTP_200_OK)
-            
         except Exception as e:
-            # Graceful fallback response to prevent a hard 500 crash on high-demand AI errors
-            fallback_summary = (
-                "### Key Findings Summary\n"
-                "Your report was uploaded successfully, but the AI clinical summary service is temporarily busy.\n\n"
-                "### Parameter Overview\n"
-                "Please review the extracted metrics table below for your specific test values."
-            )
-            return Response({
-                "report_id": pk,
-                "ai_summary": fallback_summary
-            }, status=status.HTTP_200_OK)
+            return Response({"error": f"Failed to generate summary: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ReportAIChatView(APIView):

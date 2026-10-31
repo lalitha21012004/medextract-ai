@@ -168,8 +168,9 @@ class MedicalReportDetailView(APIView):
             return Response({"error":"Report not found"},status=status.HTTP_404_NOT_FOUND)
 
 
+
 class ReportAISummaryView(APIView):
-    #Generates an AI summary for a specific medical report.
+    """Generates or retrieves an AI summary for a specific medical report."""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
@@ -178,25 +179,22 @@ class ReportAISummaryView(APIView):
         except MedicalReport.DoesNotExist:
             return Response({"error": "Medical report not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # If summary already exists on the model, return it directly
-        if getattr(report, 'ai_summary', None):
+        # Return existing summary if already saved to avoid redundant API calls
+        if report.ai_summary:
             return Response({
                 "report_id": pk,
                 "ai_summary": report.ai_summary
             }, status=status.HTTP_200_OK)
 
-        # Handle relation name safely (parameters vs extracted_parameters)
         try:
-            parameters = report.parameters.all()
-        except AttributeError:
-            parameters = report.extracted_parameters.all()
-
-        serializer = ExtractedParameterSerializer(parameters, many=True)
-
-        try:
+            # Safely grab parameters using related manager name or values fallback
+            parameters = report.extracted_parameters.all() if hasattr(report, 'extracted_parameters') else report.parameters.all()
+            serializer = ExtractedParameterSerializer(parameters, many=True)
+            
+            # Generate summary via Gemini AI utility
             summary = generate_medical_summary(serializer.data)
             
-            # Save it so we don't regenerate it next time
+            # Persist summary to model instance
             report.ai_summary = summary
             report.save()
 
@@ -206,48 +204,47 @@ class ReportAISummaryView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            # Provide a clean fallback markdown summary instead of a 500 error crash
+            # Graceful fallback response to prevent a hard 500 crash on high-demand AI errors
             fallback_summary = (
                 "### Key Findings Summary\n"
-                "Your medical report has been uploaded and stored successfully. "
-                "The automated AI clinical summary is currently experiencing high server traffic, "
-                "but your raw test values and metrics are fully accessible in the Metrics Table above.\n\n"
-                "### Recommendations\n"
-                "Please review your specific parameter table or consult with your healthcare professional."
+                "Your report was uploaded successfully, but the AI clinical summary service is temporarily busy.\n\n"
+                "### Parameter Overview\n"
+                "Please review the extracted metrics table below for your specific test values."
             )
             return Response({
                 "report_id": pk,
-                "ai_summary": fallback_summary,
-                "warning": f"AI generation delayed: {str(e)}"
+                "ai_summary": fallback_summary
             }, status=status.HTTP_200_OK)
 
+
 class ReportAIChatView(APIView):
-    #Answers patient questions grounded in report context.
+    """Answers patient questions grounded in report context."""
+    permission_classes = [permissions.IsAuthenticated]
 
-    permission_classes=[permissions.IsAuthenticated]
-
-    def post(self,request,pk):
+    def post(self, request, pk):
         try:
-            report=MedicalReport.objects.get(pk=pk,user=request.user)
+            report = MedicalReport.objects.get(pk=pk, user=request.user)
         except MedicalReport.DoesNotExist:
-            return Response({"error":"Medical Report not Found"},status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Medical Report not Found"}, status=status.HTTP_404_NOT_FOUND)
 
-        question=request.data.get("question")
+        question = request.data.get("question")
         if not question:
-            return Response({"error":"field 'question' is required"},status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "field 'question' is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        parameters=report.parameters.all()
-        serializer=ExtractedParameterSerializer(parameters,many=True)
+        parameters = report.extracted_parameters.all() if hasattr(report, 'extracted_parameters') else report.parameters.all()
+        serializer = ExtractedParameterSerializer(parameters, many=True)
 
         try:
-            answer=answer_patient_question(serializer.data,question)
+            answer = answer_patient_question(serializer.data, question)
             return Response({
-                "report_id":pk,
-                "question":question,
-                "answer":answer
-            },status=status.HTTP_200_OK)
+                "report_id": pk,
+                "question": question,
+                "answer": answer
+            }, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"error":f"Failed to get AI answer:{str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": f"Failed to get AI answer: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
         
 class UserProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]

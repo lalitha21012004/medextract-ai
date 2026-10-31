@@ -1,5 +1,4 @@
 from google import genai
-from google.genai.types import HttpOptions
 from django.conf import settings
 import os
 
@@ -7,8 +6,7 @@ def get_gemini_client():
     api_key = getattr(settings, "GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY is not configured")
-    # Force API version 'v1' to resolve 404 model errors on v1beta
-    return genai.Client(api_key=api_key, http_options=HttpOptions(api_version="v1"))
+    return genai.Client(api_key=api_key)
 
 def generate_medical_summary(parameters_data):
     client = get_gemini_client()
@@ -27,7 +25,7 @@ Provide a response in Markdown with these exact sections:
 4. **Questions for Your Doctor**"""
 
     response = client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-3.8-flash',
         contents=prompt
     )
     return response.text
@@ -47,7 +45,7 @@ Patient Question: {user_question}
 Provide a direct, clear, and comprehensive medical response addressing the patient's question based on their lab results."""
 
     response = client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-3.8-flash',
         contents=prompt
     )
     return response.text

@@ -8,6 +8,7 @@ dj-database-url
 gunicorn
 whitenoise
 celery
+tkinter
 redis
 python-dotenv
 google-genai

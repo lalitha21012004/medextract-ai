@@ -1,7 +1,9 @@
 from google import genai
 from django.conf import settings
 import os
-import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_gemini_client():
     api_key = getattr(settings, "GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")
@@ -9,29 +11,24 @@ def get_gemini_client():
         raise ValueError("GEMINI_API_KEY is not configured")
     return genai.Client(api_key=api_key)
 
-def call_gemini_with_retry(prompt, retries=3, delay=2):
-    client = get_gemini_client()
-    last_err = None
+def get_working_model(client):
+    # Dynamically find an available flash or pro model from your API key
+    try:
+        for m in client.models.list():
+            name = m.name.replace("models/", "")
+            methods = getattr(m, "supported_generation_methods", [])
+            if "generateContent" in methods and "flash" in name:
+                return name
+    except Exception as e:
+        logger.warning(f"Model listing failed: {e}")
     
-    for attempt in range(retries):
-        try:
-            response = client.models.generate_content(
-                model='gemini-3.8-flash',
-                contents=prompt
-            )
-            if response and response.text:
-                return response.text
-        except Exception as e:
-            last_err = e
-            # If it's a 503 high demand or temporary error, wait and retry
-            if "503" in str(e) or "UNAVAILABLE" in str(e):
-                time.sleep(delay * (attempt + 1))
-                continue
-            raise e
-            
-    raise RuntimeError(f"Gemini API unavailable after {retries} attempts. Last error: {str(last_err)}")
+    # Fallback to standard model identifier if listing fails
+    return "gemini-1.5-flash"
 
 def generate_medical_summary(parameters_data):
+    client = get_gemini_client()
+    model_name = get_working_model(client)
+    
     param_text = "\n".join([
         f"- {p.get('parameter_name')}: {p.get('observed_value')} {p.get('unit')} ({p.get('risk_level')})"
         for p in parameters_data
@@ -46,9 +43,16 @@ Provide a response in Markdown with these exact sections:
 3. **Lifestyle & Health Recommendations**
 4. **Questions for Your Doctor**"""
 
-    return call_gemini_with_retry(prompt)
+    response = client.models.generate_content(
+        model=model_name,
+        contents=prompt
+    )
+    return response.text
 
 def answer_patient_question(parameters_data, user_question):
+    client = get_gemini_client()
+    model_name = get_working_model(client)
+    
     param_text = "\n".join([
         f"- {p.get('parameter_name')}: {p.get('observed_value')} {p.get('unit')} ({p.get('risk_level')})"
         for p in parameters_data
@@ -61,4 +65,8 @@ Patient Question: {user_question}
 
 Provide a direct, clear, and comprehensive medical response addressing the patient's question based on their lab results."""
 
-    return call_gemini_with_retry(prompt)
+    response = client.models.generate_content(
+        model=model_name,
+        contents=prompt
+    )
+    return response.text

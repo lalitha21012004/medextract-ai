@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 import os
-from tkinter import FALSE
 import dj_database_url
 from dotenv import load_dotenv
 
@@ -91,7 +90,7 @@ DATABASES = {
     "default": dj_database_url.config(
         default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
-        ssl_require=FALSE
+        ssl_require=True
     )
 }
 AUTH_USER_MODEL = 'api.CustomUser'

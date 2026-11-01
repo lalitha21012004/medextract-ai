@@ -1,4 +1,5 @@
 from google import genai
+from google.genai.types import HttpOptions
 from django.conf import settings
 import os
 import logging
@@ -9,10 +10,10 @@ def get_gemini_client():
     api_key = getattr(settings, "GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY is not configured")
-    return genai.Client(api_key=api_key)
+    # Force API version 'v1' to prevent v1beta 404 errors on standard models
+    return genai.Client(api_key=api_key, http_options=HttpOptions(api_version="v1"))
 
 def get_working_model(client):
-    # Dynamically find an available flash or pro model from your API key
     try:
         for m in client.models.list():
             name = m.name.replace("models/", "")
@@ -22,7 +23,6 @@ def get_working_model(client):
     except Exception as e:
         logger.warning(f"Model listing failed: {e}")
     
-    # Fallback to standard model identifier if listing fails
     return "gemini-1.5-flash"
 
 def generate_medical_summary(parameters_data):

@@ -175,6 +175,15 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 CORS_ALLOW_ALL_ORIGINS=True
+# In backend/core/settings.py
+
+CORS_ALLOWED_ORIGINS = [
+    "https://medextract-bk5lw32wf-lalitha21012004-projects.vercel.app",
+    # Add any other frontend URLs you use, e.g., http://localhost:5173
+]
+
+# OR if you prefer to allow all origins temporarily to clear any blockages:
+# CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',

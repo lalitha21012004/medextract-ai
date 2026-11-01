@@ -1,3 +1,5 @@
+from asyncio.log import logger
+
 import requests
 import random
 from django.shortcuts import render
@@ -189,9 +191,10 @@ class ReportAISummaryView(APIView):
                 "report_id": pk,
                 "ai_summary": summary
             }, status=status.HTTP_200_OK)
+       
         except Exception as e:
-            return Response({"error": f"Failed to generate summary: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            logger.error(f"AI generation failed: {e}")
+            summary = "AI summary generation is temporarily busy or unavailable. Please try again."
 
 class ReportAIChatView(APIView):
     """Answers patient questions grounded in report context."""

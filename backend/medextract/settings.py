@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 import os
+from tkinter import FALSE
 import dj_database_url
 from dotenv import load_dotenv
 
@@ -90,7 +91,7 @@ DATABASES = {
     "default": dj_database_url.config(
         default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
-        ssl_require=not DEBUG
+        ssl_require=FALSE
     )
 }
 AUTH_USER_MODEL = 'api.CustomUser'
@@ -174,13 +175,15 @@ load_dotenv()
 # Load Gemini API key from the environment.
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-CORS_ALLOW_ALL_ORIGINS=True
+CORS_ALLOW_ALL_ORIGINS=False
 # In backend/core/settings.py
-
-CORS_ALLOWED_ORIGINS = [
-    "https://medextract-bk5lw32wf-lalitha21012004-projects.vercel.app",
-    # Add any other frontend URLs you use, e.g., http://localhost:5173
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://([a-z0-9-]+)-lalitha21012004s-projects\.vercel\.app$",
+    r"^https://medextract-ai.*\.vercel\.app$",
+    r"http://localhost:5173",
+    r"http://127.0.0.1:5173",
 ]
+
 
 # OR if you prefer to allow all origins temporarily to clear any blockages:
 # CORS_ALLOW_ALL_ORIGINS = True

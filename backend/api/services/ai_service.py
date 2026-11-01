@@ -1,6 +1,7 @@
 from google import genai
 from django.conf import settings
 import os
+import time
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,25 +12,33 @@ def get_gemini_client():
         raise ValueError("GEMINI_API_KEY is not configured")
     return genai.Client(api_key=api_key)
 
-def get_working_model(client):
-    try:
-        for m in client.models.list():
-            methods = getattr(m, "supported_generation_methods", [])
-            # Check if this model explicitly supports generateContent
-            if "generateContent" in methods:
-                clean_name = m.name.replace("models/", "")
-                logger.info(f"Found supported model: {clean_name}")
-                return clean_name
-    except Exception as e:
-        logger.warning(f"Model listing failed: {e}")
-    
-    # Absolute fallback if list fails
-    return "gemini-2.0-flash"
+def call_gemini_with_retry(prompt, retries=4, delay=2):
+    client = get_gemini_client()
+    # Google's current required active model identifier
+    model_name = "gemini-3.8-flash"
+    last_err = None
+
+    for attempt in range(retries):
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt
+            )
+            if response and response.text:
+                return response.text
+        except Exception as e:
+            last_err = e
+            # Handle 503 temporary high-demand spikes with exponential backoff
+            err_str = str(e)
+            if "503" in err_str or "UNAVAILABLE" in err_str or "high demand" in err_str:
+                logger.warning(f"Gemini 503 high demand on attempt {attempt + 1}, retrying in {delay * (attempt + 1)}s...")
+                time.sleep(delay * (attempt + 1))
+                continue
+            raise e
+
+    raise RuntimeError(f"Gemini API unavailable after {retries} attempts. Last error: {str(last_err)}")
 
 def generate_medical_summary(parameters_data):
-    client = get_gemini_client()
-    model_name = get_working_model(client)
-    
     param_text = "\n".join([
         f"- {p.get('parameter_name')}: {p.get('observed_value')} {p.get('unit')} ({p.get('risk_level')})"
         for p in parameters_data
@@ -44,16 +53,9 @@ Provide a response in Markdown with these exact sections:
 3. **Lifestyle & Health Recommendations**
 4. **Questions for Your Doctor**"""
 
-    response = client.models.generate_content(
-        model=model_name,
-        contents=prompt
-    )
-    return response.text
+    return call_gemini_with_retry(prompt)
 
 def answer_patient_question(parameters_data, user_question):
-    client = get_gemini_client()
-    model_name = get_working_model(client)
-    
     param_text = "\n".join([
         f"- {p.get('parameter_name')}: {p.get('observed_value')} {p.get('unit')} ({p.get('risk_level')})"
         for p in parameters_data
@@ -66,8 +68,4 @@ Patient Question: {user_question}
 
 Provide a direct, clear, and comprehensive medical response addressing the patient's question based on their lab results."""
 
-    response = client.models.generate_content(
-        model=model_name,
-        contents=prompt
-    )
-    return response.text
+    return call_gemini_with_retry(prompt)

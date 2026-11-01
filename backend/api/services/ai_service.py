@@ -1,5 +1,4 @@
 from google import genai
-from google.genai.types import HttpOptions
 from django.conf import settings
 import os
 import logging
@@ -10,20 +9,22 @@ def get_gemini_client():
     api_key = getattr(settings, "GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY is not configured")
-    # Force API version 'v1' to prevent v1beta 404 errors on standard models
-    return genai.Client(api_key=api_key, http_options=HttpOptions(api_version="v1"))
+    return genai.Client(api_key=api_key)
 
 def get_working_model(client):
     try:
         for m in client.models.list():
-            name = m.name.replace("models/", "")
             methods = getattr(m, "supported_generation_methods", [])
-            if "generateContent" in methods and "flash" in name:
-                return name
+            # Check if this model explicitly supports generateContent
+            if "generateContent" in methods:
+                clean_name = m.name.replace("models/", "")
+                logger.info(f"Found supported model: {clean_name}")
+                return clean_name
     except Exception as e:
         logger.warning(f"Model listing failed: {e}")
     
-    return "gemini-1.5-flash"
+    # Absolute fallback if list fails
+    return "gemini-2.0-flash"
 
 def generate_medical_summary(parameters_data):
     client = get_gemini_client()

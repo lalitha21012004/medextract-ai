@@ -169,8 +169,6 @@ class MedicalReportDetailView(APIView):
         except MedicalReport.DoesNotExist:
             return Response({"error":"Report not found"},status=status.HTTP_404_NOT_FOUND)
 
-
-
 class ReportAISummaryView(APIView):
     """Generates an AI summary for a specific medical report on the fly."""
     permission_classes = [permissions.IsAuthenticated]
@@ -193,8 +191,14 @@ class ReportAISummaryView(APIView):
             }, status=status.HTTP_200_OK)
        
         except Exception as e:
-            logger.error(f"AI generation failed: {e}")
-            summary = "AI summary generation is temporarily busy or unavailable. Please try again."
+            print(f"AI generation failed: {e}")
+            # Return a graceful 200 or 503 response so the frontend doesn't break with a 500
+            return Response({
+                "report_id": pk,
+                "ai_summary": "AI summary generation is temporarily busy due to high demand. Please refresh in a moment."
+            }, status=status.HTTP_200_OK)
+
+
 
 class ReportAIChatView(APIView):
     """Answers patient questions grounded in report context."""

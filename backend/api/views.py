@@ -169,35 +169,32 @@ class MedicalReportDetailView(APIView):
         except MedicalReport.DoesNotExist:
             return Response({"error":"Report not found"},status=status.HTTP_404_NOT_FOUND)
 
+
 class ReportAISummaryView(APIView):
-    """Generates an AI summary for a specific medical report on the fly."""
+    """Retrieves the pre-generated AI summary for a specific medical report instantly."""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
         try:
             report = MedicalReport.objects.get(pk=pk, user=request.user)
+            
+            # If summary is already generated, return it instantly
+            if report.ai_summary:
+                return Response({
+                    "report_id": pk,
+                    "ai_summary": report.ai_summary,
+                    "status": report.status
+                }, status=status.HTTP_200_OK)
+            
+            # Fallback if it's still processing
+            return Response({
+                "report_id": pk,
+                "ai_summary": "AI summary is currently being synthesized. Please check back in a few seconds.",
+                "status": "PROCESSING"
+            }, status=status.HTTP_202_ACCEPTED)
+            
         except MedicalReport.DoesNotExist:
             return Response({"error": "Medical report not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Safely fetch extracted parameters
-        parameters = report.extracted_parameters.all() if hasattr(report, 'extracted_parameters') else report.parameters.all()
-        serializer = ExtractedParameterSerializer(parameters, many=True)
-
-        try:
-            summary = generate_medical_summary(serializer.data)
-            return Response({
-                "report_id": pk,
-                "ai_summary": summary
-            }, status=status.HTTP_200_OK)
-       
-        except Exception as e:
-            print(f"AI generation failed: {e}")
-            # Return a graceful 200 or 503 response so the frontend doesn't break with a 500
-            return Response({
-                "report_id": pk,
-                "ai_summary": "AI summary generation is temporarily busy due to high demand. Please refresh in a moment."
-            }, status=status.HTTP_200_OK)
-
 
 
 class ReportAIChatView(APIView):

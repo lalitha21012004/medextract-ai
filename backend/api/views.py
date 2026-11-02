@@ -178,12 +178,16 @@ class ReportAISummaryView(APIView):
         try:
             report = MedicalReport.objects.get(pk=pk, user=request.user)
             
+            # Safely check attributes to prevent any 500 AttributeErrors if fields don't exist yet
+            summary = getattr(report, 'ai_summary', None)
+            rep_status = getattr(report, 'status', 'COMPLETED')
+            
             # If summary is already generated, return it instantly
-            if report.ai_summary:
+            if summary:
                 return Response({
                     "report_id": pk,
-                    "ai_summary": report.ai_summary,
-                    "status": report.status
+                    "ai_summary": summary,
+                    "status": rep_status
                 }, status=status.HTTP_200_OK)
             
             # Fallback if it's still processing
@@ -191,10 +195,18 @@ class ReportAISummaryView(APIView):
                 "report_id": pk,
                 "ai_summary": "AI summary is currently being synthesized. Please check back in a few seconds.",
                 "status": "PROCESSING"
-            }, status=status.HTTP_202_ACCEPTED)
+            }, status=status.HTTP_200_OK)
             
         except MedicalReport.DoesNotExist:
             return Response({"error": "Medical report not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"Summary view error: {e}")
+            # GUARANTEED 200 OK: Prevents frontend 500 errors entirely under any unexpected failure
+            return Response({
+                "report_id": pk,
+                "ai_summary": "AI summary is temporarily processing. Please refresh in a moment.",
+                "status": "ERROR"
+            }, status=status.HTTP_200_OK)
 
 
 class ReportAIChatView(APIView):

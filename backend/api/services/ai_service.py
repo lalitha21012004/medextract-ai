@@ -1,16 +1,15 @@
 import os
-from openai import OpenAI
 
-def get_openai_client():
+def get_groq_client():
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise ValueError("GROQ_API_KEY environment variable is missing.")
-    return OpenAI(api_key=api_key)
+    return Groq(api_key=api_key)
 
 def generate_medical_summary(parameters):
     """Generates a concise clinical summary using Groq."""
     try:
-        client = get_openai_client()
+        client = get_groq_client()
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
@@ -27,7 +26,7 @@ def generate_medical_summary(parameters):
 def answer_patient_question(parameters, question):
     """Answers user queries grounded in report parameters using Groq."""
     try:
-        client = get_openai_client()
+        client = get_groq_client()
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[

@@ -16,7 +16,7 @@ def generate_medical_summary(parameters):
     try:
         client = get_groq_client()
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[
                 {"role": "system", "content": "You are a helpful clinical assistant. Summarize these extracted medical parameters clearly for a patient."},
                 {"role": "user", "content": f"Parameters: {parameters}"}
@@ -33,7 +33,7 @@ def answer_patient_question(parameters, question):
     try:
         client = get_groq_client()
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[
                 {"role": "system", "content": f"You are a helpful medical assistant explaining lab results to a patient based strictly on this report data: {parameters}"},
                 {"role": "user", "content": question}

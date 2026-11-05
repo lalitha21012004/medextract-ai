@@ -1,9 +1,14 @@
 import os
+from importlib import import_module
 
 def get_groq_client():
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise ValueError("GROQ_API_KEY environment variable is missing.")
+    try:
+        Groq = import_module("groq").Groq
+    except ImportError as e:
+        raise ImportError("The Groq SDK is required. Install it with 'pip install groq'.") from e
     return Groq(api_key=api_key)
 
 def generate_medical_summary(parameters):

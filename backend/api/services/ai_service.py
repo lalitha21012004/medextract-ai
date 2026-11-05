@@ -15,7 +15,7 @@ def generate_medical_summary(parameters):
         prompt = f"Act as a clinical assistant. Summarize these extracted medical parameters clearly for a patient: {parameters}"
         
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.8-flash',
             contents=prompt
         )
         return response.text
@@ -35,7 +35,7 @@ def answer_patient_question(parameters, question):
         Provide a short, accurate, and easy-to-understand response.
         """
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.8-flash',
             contents=prompt
         )
         return response.text

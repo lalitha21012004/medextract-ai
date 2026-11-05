@@ -15,7 +15,7 @@ client = genai.Client(api_key=api_key)
 try:
     print("Testing connection with client.models.generate_content...")
     response = client.models.generate_content(
-        model="gemini-2.0-flash",
+        model="gemini-3.8-flash",
         contents="Hello, give me a short health tip."
     )
     print("\nSUCCESS! Response from Gemini:")

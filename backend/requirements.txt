@@ -10,8 +10,7 @@ whitenoise
 celery
 redis
 python-dotenv
-google-genai
-google-generativeai
+openai
 datasets
 pydantic
 python-magic

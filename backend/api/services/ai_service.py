@@ -18,7 +18,10 @@ def generate_medical_summary(parameters):
         response = client.chat.completions.create(
             model="openai/gpt-oss-120b",
             messages=[
-                {"role": "system", "content": "You are a helpful clinical assistant. Summarize these extracted medical parameters clearly for a patient."},
+                {
+                    "role": "system", 
+                    "content": "You are a clinical assistant. Summarize these extracted medical parameters clearly for a patient using clean headings and bullet points."
+                },
                 {"role": "user", "content": f"Parameters: {parameters}"}
             ],
             temperature=0.3,
@@ -29,14 +32,21 @@ def generate_medical_summary(parameters):
         raise e
 
 def answer_patient_question(parameters, question):
-    """Answers user queries grounded in report parameters using Groq."""
+    """Answers user queries grounded in report parameters using Groq with chat-friendly formatting."""
     try:
         client = get_groq_client()
         response = client.chat.completions.create(
             model="openai/gpt-oss-120b",
             messages=[
-                {"role": "system", "content": f"You are a helpful medical assistant explaining lab results to a patient based strictly on this report data: {parameters}"},
-                {"role": "user", "content": question}
+                {
+                    "role": "system", 
+                    "content": (
+                        "You are a helpful medical assistant explaining lab results to a patient based strictly on the provided report data. "
+                        "Format your response cleanly for a chat bubble: use short paragraphs, bold text for key numbers/values, and bullet points. "
+                        "DO NOT use markdown tables or pipe symbols (|)."
+                    )
+                },
+                {"role": "user", "content": f"Report Data: {parameters}\n\nQuestion: {question}"}
             ],
             temperature=0.3,
         )

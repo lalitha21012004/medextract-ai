@@ -8,7 +8,7 @@ def get_openai_client():
     return OpenAI(api_key=api_key)
 
 def generate_medical_summary(parameters):
-    """Generates a concise clinical summary using OpenAI."""
+    """Generates a concise clinical summary using Groq."""
     try:
         client = get_openai_client()
         response = client.chat.completions.create(
@@ -25,7 +25,7 @@ def generate_medical_summary(parameters):
         raise e
 
 def answer_patient_question(parameters, question):
-    """Answers user queries grounded in report parameters using OpenAI."""
+    """Answers user queries grounded in report parameters using Groq."""
     try:
         client = get_openai_client()
         response = client.chat.completions.create(

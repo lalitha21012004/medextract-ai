@@ -10,7 +10,7 @@ whitenoise
 celery
 redis
 python-dotenv
-openai
+groq
 datasets
 pydantic
 python-magic

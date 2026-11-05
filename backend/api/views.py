@@ -210,38 +210,31 @@ class ReportAISummaryView(APIView):
 
 
 class ReportAIChatView(APIView):
-    """Answers patient questions grounded in report context."""
+    """Handles real-time Q&A about a medical report."""
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
         try:
             report = MedicalReport.objects.get(pk=pk, user=request.user)
         except MedicalReport.DoesNotExist:
-            return Response({"error": "Medical Report not Found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Medical report not found"}, status=status.HTTP_404_NOT_FOUND)
 
         question = request.data.get("question")
         if not question:
-            return Response({"error": "field 'question' is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Question parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        parameters = report.extracted_parameters.all() if hasattr(report, 'extracted_parameters') else report.parameters.all()
-        serializer = ExtractedParameterSerializer(parameters, many=True)
+        # Collect parameter data
+        parameters = list(report.parameters.values()) if hasattr(report, 'parameters') else []
 
-        try:
-            # Add a safe timeout/try block around the AI service call
-            answer = answer_patient_question(serializer.data, question)
-            return Response({
-                "report_id": pk,
-                "question": question,
-                "answer": answer
-            }, status=status.HTTP_200_OK)
-        except Exception as e:
-            print(f"Chat AI Error: {e}")
-            # Return a graceful 200 fallback response so the frontend chat bubble displays cleanly instead of crashing
-            return Response({
-                "report_id": pk,
-                "question": question,
-                "answer": "I'm currently experiencing high traffic reaching the clinical AI service. Please try asking your question again in a moment."
-            }, status=status.HTTP_200_OK)
+        # Call Gemini service
+        answer = answer_patient_question(parameters, question)
+
+        # Always return 200 OK so the frontend chat bubble displays the result instead of crashing
+        return Response({
+            "report_id": pk,
+            "question": question,
+            "answer": answer
+        }, status=status.HTTP_200_OK)
 
         
 class UserProfileView(APIView):

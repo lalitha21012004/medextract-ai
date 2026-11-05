@@ -171,46 +171,54 @@ class MedicalReportDetailView(APIView):
 
 
 class ReportAISummaryView(APIView):
-    """Retrieves the pre-generated AI summary for a specific medical report instantly."""
+    """Retrieves or dynamically generates the AI summary for a specific medical report."""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
         try:
             report = MedicalReport.objects.get(pk=pk, user=request.user)
             
-            # Safely check attributes to prevent any 500 AttributeErrors if fields don't exist yet
-            summary = getattr(report, 'summary', None)
-            rep_status = getattr(report, 'status', 'COMPLETED')
+            # Check your actual model fields (ai_summary or summary)
+            summary = getattr(report, 'ai_summary', None) or getattr(report, 'summary', None)
             
-            # If summary is already generated, return it instantly
-            if summary:
+            if summary and summary != "No summary available.":
                 return Response({
                     "report_id": pk,
-                    "summary": summary,
-                    "status": rep_status
+                    "ai_summary": summary,
+                    "status": "COMPLETED"
                 }, status=status.HTTP_200_OK)
-            
-            # Fallback if it's still processing
+
+            # If empty, generate it right now using parameters
+            parameters = list(report.parameters.values()) if hasattr(report, 'parameters') else []
+            if parameters:
+                generated_summary = generate_medical_summary(parameters)
+                report.ai_summary = generated_summary
+                report.save()
+                return Response({
+                    "report_id": pk,
+                    "ai_summary": generated_summary,
+                    "status": "COMPLETED"
+                }, status=status.HTTP_200_OK)
+
             return Response({
                 "report_id": pk,
-                "summary": "AI summary is currently being synthesized. Please check back in a few seconds.",
-                "status": "PROCESSING"
+                "ai_summary": "No parameters found in this report to summarize.",
+                "status": "EMPTY"
             }, status=status.HTTP_200_OK)
             
         except MedicalReport.DoesNotExist:
             return Response({"error": "Medical report not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(f"Summary view error: {e}")
-            # GUARANTEED 200 OK: Prevents frontend 500 errors entirely under any unexpected failure
+            print(f"Summary view exception: {str(e)}")
             return Response({
                 "report_id": pk,
-                "summary": "AI summary is temporarily processing. Please refresh in a moment.",
+                "ai_summary": f"Error generating summary: {str(e)}",
                 "status": "ERROR"
             }, status=status.HTTP_200_OK)
 
 
 class ReportAIChatView(APIView):
-    """Handles real-time Q&A about a medical report."""
+    """Handles real-time Q&A about a medical report with live AI tracking."""
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
@@ -226,15 +234,24 @@ class ReportAIChatView(APIView):
         # Collect parameter data
         parameters = list(report.parameters.values()) if hasattr(report, 'parameters') else []
 
-        # Call Gemini service
-        answer = answer_patient_question(parameters, question)
+        try:
+            # Call Gemini service directly
+            answer = answer_patient_question(parameters, question)
+            return Response({
+                "report_id": pk,
+                "question": question,
+                "answer": answer
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"Chat View Exception: {str(e)}")
+            # Return the explicit error message so you can see why it failed in the UI chat box
+            return Response({
+                "report_id": pk,
+                "question": question,
+                "answer": f"AI Engine Error: {str(e)}"
+            }, status=status.HTTP_200_OK)
 
-        # Always return 200 OK so the frontend chat bubble displays the result instead of crashing
-        return Response({
-            "report_id": pk,
-            "question": question,
-            "answer": answer
-        }, status=status.HTTP_200_OK)
+
 
         
 class UserProfileView(APIView):

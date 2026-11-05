@@ -1,0 +1,162 @@
+.
+├── README.md
+├── backend
+│   ├── api
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── migrations
+│   │   │   ├── 0001_initial.py
+│   │   │   ├── 0002_medicalreport_extracted_text.py
+│   │   │   ├── 0003_alter_medicalreport_report_file.py
+│   │   │   ├── 0004_alter_medicalreport_report_file_and_more.py
+│   │   │   ├── 0005_alter_medicalreport_report_file.py
+│   │   │   └── __init__.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── services
+│   │   │   ├── ai_service.py
+│   │   │   └── ocr_service.py
+│   │   ├── tasks.py
+│   │   ├── testdataset
+│   │   │   └── test.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   ├── validators.py
+│   │   └── views.py
+│   ├── manage.py
+│   ├── medextract
+│   │   ├── __init__.py
+│   │   ├── asgi.py
+│   │   ├── celery.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── wsgi.py
+│   ├── medextract-ai
+│   │   ├── README.md
+│   │   ├── backend
+│   │   │   ├── api
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── admin.py
+│   │   │   │   ├── apps.py
+│   │   │   │   ├── migrations
+│   │   │   │   │   ├── 0001_initial.py
+│   │   │   │   │   └── __init__.py
+│   │   │   │   ├── models.py
+│   │   │   │   ├── serializers.py
+│   │   │   │   ├── tests.py
+│   │   │   │   ├── urls.py
+│   │   │   │   └── views.py
+│   │   │   ├── manage.py
+│   │   │   └── medextract
+│   │   │       ├── __init__.py
+│   │   │       ├── asgi.py
+│   │   │       ├── settings.py
+│   │   │       ├── urls.py
+│   │   │       └── wsgi.py
+│   │   └── frontend
+│   │       ├── README.md
+│   │       ├── eslint.config.js
+│   │       ├── index.html
+│   │       ├── package-lock.json
+│   │       ├── package.json
+│   │       ├── public
+│   │       │   ├── favicon.svg
+│   │       │   └── icons.svg
+│   │       ├── src
+│   │       │   ├── App.css
+│   │       │   ├── App.jsx
+│   │       │   ├── assets
+│   │       │   │   ├── hero.png
+│   │       │   │   ├── react.svg
+│   │       │   │   └── vite.svg
+│   │       │   ├── index.css
+│   │       │   ├── main.jsx
+│   │       │   └── pages
+│   │       │       ├── Auth.jsx
+│   │       │       ├── Dashboard.jsx
+│   │       │       ├── Profile.jsx
+│   │       │       ├── ReportDetail.jsx
+│   │       │       └── UploadReport.jsx
+│   │       └── vite.config.js
+│   ├── medical_reports
+│   │   ├── medical_reports
+│   │   │   ├── user_2
+│   │   │   │   ├── Medical_Hematology_Report.pdf
+│   │   │   │   ├── Medical_Hematology_Report_acYO81n.pdf
+│   │   │   │   ├── Medical_Hematology_Report_buIhsj0.pdf
+│   │   │   │   └── Medical_Hematology_Report_r3H9IEE.pdf
+│   │   │   └── user_3
+│   │   │       ├── Medical_Hematology_Report.pdf
+│   │   │       ├── Medical_Hematology_Report_4exPUnI.pdf
+│   │   │       ├── Medical_Hematology_Report_5aSAD4P.pdf
+│   │   │       ├── Medical_Hematology_Report_6KOjHbx.pdf
+│   │   │       ├── Medical_Hematology_Report_9IGo5M3.pdf
+│   │   │       ├── Medical_Hematology_Report_B4SnDw2.pdf
+│   │   │       ├── Medical_Hematology_Report_C0FHRvY.pdf
+│   │   │       ├── Medical_Hematology_Report_ICQ1d1X.pdf
+│   │   │       ├── Medical_Hematology_Report_L1wyVf2.pdf
+│   │   │       ├── Medical_Hematology_Report_RQSHXWQ.pdf
+│   │   │       ├── Medical_Hematology_Report_Z8pwgVz.pdf
+│   │   │       ├── Medical_Hematology_Report_dhnLM1u.pdf
+│   │   │       ├── Medical_Hematology_Report_fyQtxdZ.pdf
+│   │   │       ├── Medical_Hematology_Report_gfFXJeP.pdf
+│   │   │       ├── Medical_Hematology_Report_jc93uMF.pdf
+│   │   │       ├── Medical_Hematology_Report_jfu0M1V.pdf
+│   │   │       ├── Medical_Hematology_Report_lbUioTX.pdf
+│   │   │       ├── Medical_Hematology_Report_qbW2Elm.pdf
+│   │   │       ├── Medical_Hematology_Report_rEIKmk3.pdf
+│   │   │       ├── Medical_Hematology_Report_rQLPsB2.pdf
+│   │   │       ├── Medical_Hematology_Report_sAh8Y8h.pdf
+│   │   │       ├── Medical_Hematology_Report_wR46PxQ.pdf
+│   │   │       └── Medical_Hematology_Report_yGVH4sU.pdf
+│   │   ├── user_1
+│   │   │   ├── large_sample.pdf
+│   │   │   ├── large_sample_kul2FjD.pdf
+│   │   │   ├── valid_medical_report.pdf
+│   │   │   ├── valid_medical_report_5Oepjsp.pdf
+│   │   │   ├── valid_medical_report_WnTjj9z.pdf
+│   │   │   └── valid_medical_report_bIsWTP5.pdf
+│   │   ├── user_2
+│   │   │   ├── large_sample.pdf
+│   │   │   └── valid_medical_report.pdf
+│   │   └── user_guest
+│   │       └── large_sample.pdf
+│   ├── requirements.txt
+│   └── test_gemini.py
+├── frontend
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   ├── favicon.svg
+│   │   └── icons.svg
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── assets
+│   │   │   ├── hero.png
+│   │   │   ├── react.svg
+│   │   │   └── vite.svg
+│   │   ├── components
+│   │   │   ├── FormattedMarkdown.jsx
+│   │   │   └── ProtectedRoute.jsx
+│   │   ├── index.css
+│   │   ├── main.jsx
+│   │   ├── pages
+│   │   │   ├── Auth.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   ├── ReportDetail.jsx
+│   │   │   └── UploadReport.jsx
+│   │   └── services
+│   │       └── Api.js
+│   ├── vercel.json
+│   └── vite.config.js
+├── large_sample.pdf
+├── project_structure.txt
+└── valid_medical_report.pdf
+
+31 directories, 129 files
